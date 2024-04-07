@@ -1,0 +1,898 @@
+
+identify tokens,vars
+
+*******
+
+%{
+int n = 0,keyword=0,identifier=0,operator=0,separator=0;
+%}
+
+%%
+
+
+"while"|"if"|"else"    { n++,keyword++; printf("\t keyword : %s\n", yytext); }
+
+
+"int"|"float"           { n++,keyword++; printf("\t keyword : %s\n", yytext); }
+
+[a-zA-Z_][a-zA-Z0-9_]*  { n++,identifier++; printf("\t identifier : %s\n", yytext); }
+
+
+"<="|"=="|"="|"++"|"-"|"*"|"+" { n++,operator++; printf("\t operator : %s\n", yytext); }
+
+
+[(){}|, ;]              { n++,separator++; printf("\t separator : %s\n", yytext); }
+
+[0-9]*"."[0-9]+         { n++,keyword++; printf("\t float : %s\n", yytext); }
+
+
+[0-9]+                  { n++,keyword++; printf("\t integer : %s\n", yytext); }
+
+. ;
+
+%%
+
+int main()
+{
+    yyin= fopen("mycode.txt","r");
+    yylex();
+    printf("\n Total no. of tokens = %d\n", n);
+    printf("\n Total no. of keyword = %d\n", keyword);
+    printf("\n Total no. of identifier = %d\n", identifier);
+    printf("\n Total no. of separator = %d\n", separator);
+    return 0;
+}
+int yywrap()
+{
+return(1);
+}
+
+
+
+**********
+
+
+date of exami,semester,no. of words,small,capital letters.
+
+
+
+************
+
+
+%{
+#include<stdio.h>
+#include <string.h>
+int lines = 0, words = 0, s_letters = 0, c_letters = 0, num = 0, spl_char = 0, total = 0;
+char date[20], semester[10];
+int num_questions = 0;
+%}
+
+%%
+\n { lines++; words++; }
+[\t ' '] { words++;}
+[A-Z] { c_letters++; }
+[a-z] { s_letters++;}
+[0-9] { num++;REJECT;}
+. { spl_char++; }
+"Sem:"[ \t]*[IVXLCDM]+ { sscanf(yytext + 5, "%s", semester); }
+
+(([0-9])+\/([0-9])+\/([0-9]){4}) {strcpy(date,yytext);REJECT;}
+^Question[0-9]+ { num_questions++; REJECT;}
+
+%%
+
+int main()
+{
+    yyin = fopen("ep2read.txt", "r");
+    yylex();
+    total = s_letters + c_letters + num + spl_char;
+
+    printf("\n\tDate of examination: %s", date);
+    printf("\n\tSemester: %s", semester);
+    printf("\n\tNumber of questions: %d", num_questions);
+    printf("\n\tNumber of lines: %d", lines);
+    printf("\n\tNumber of words: %d", words);
+    printf("\n\tNumber of small letters: %d", s_letters);
+    printf("\n\tNumber of capital letters: %d", c_letters);
+    printf("\n\tNumber of digits: %d", num);
+    printf("\n\tNumber of special characters: %d", spl_char);
+    printf("\n\tIn total %d characters.\n", total);
+
+    return 0;
+}
+int yywrap()
+{
+	return (1);
+}
+
+
+************
+
+Create a txt file to containing the following without heading: Name of Student,
+Company Placed in (TCS, Infosys, Wipro, Accenture, Informatica), Male/female, CGPA (floating
+point number), Department (CSE, IT, EC), Package (floating point number), mail id, mobile
+number (integer exactly 10 digits). At least 10 records must be present.
+
+
+***********
+
+%{
+#include <stdio.h>
+#include <string.h>
+int fem=0;
+int male=0;
+int tcs=0;
+int wipro=0;
+int acc=0;
+int inf=0;
+int info=0;
+int cse=0;
+int it=0;
+int ec=0;
+char company[100];
+%}
+
+%%
+"Female" { printf("Gender:%s\n",yytext); fem++;}
+"Male" {printf("Gender:%s\n",yytext); male++;}
+"TCS"|"Infosys"|"Wipro"|"Accenture"|"Informatica" { printf("Company Placed in: %s\n", yytext);
+strcpy(company, yytext); // Copy yytext to company
+
+    if (strcmp(company, "TCS") == 0) {
+        tcs++;
+    } else if (strcmp(company, "Wipro") == 0) {
+        wipro++;
+    } else if (strcmp(company, "Accenture") == 0) {
+        acc++;
+    } else if (strcmp(company, "Informatica") == 0) {
+        inf++;
+    } else {
+        info++;
+    }
+
+ }
+"CSE"|"IT"|"EC" { printf("%s Branch\n", yytext);
+char branch[100];
+strcpy(branch,yytext);
+if(strcmp(branch,"CSE")==0){
+cse++;
+}else if (strcmp(branch,"IT")==0){
+it++;
+}else{
+ec++;
+}
+ }
+
+[[:alpha:]]+ { printf(" Name of student: %s\n", yytext); }
+[0-9]+"."[0-9]+ {
+    double cgpa = atof(yytext);
+    if (cgpa < 10.0) {
+        printf("CGPA: %s\n", yytext);
+    }
+}
+
+[0-9]{10} {printf("Mobile:%s\n",yytext);}
+[0-9]+ { printf("Package: %s\n", yytext); }
+[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,} { printf("Mail id: %s\n", yytext); }
+
+
+%%
+
+int main() {
+    yyin = fopen("ep3read.txt", "r");
+    yylex();
+    printf("\nNo. of Female Students:%d\n",fem);
+    printf("No. of Male Students:%d\n",male);
+    printf("No. of Students in TCS:%d\n",tcs);
+    printf("No. of Students in Wipro:%d\n",wipro);
+    printf("No. of Students in Accenture:%d\n",acc);
+    printf("No. of Students in Informatica:%d\n",inf);
+    printf("No. of Students in Infosys:%d\n",info);
+    printf("No. of IT students:%d\n",it);
+    printf("No. of CSE students:%d\n",cse);
+    printf("No. of EC students:%d\n",ec);
+    return 0;
+}
+int yywrap(void)
+{
+   return 1;
+}
+
+
+
+********
+
+Comments remove
+
+********
+
+
+%{
+%}
+
+start \/\*
+end \*\/
+
+%%
+
+\/\/[^\n]* { printf("Single-line comment: %s\n", yytext); }
+
+{start}[^*]*{end} { printf("Multiline comment: %s\nReading ep4read.txt\n Writing into file ep4write.txt\n ", yytext); }
+
+.|\n { fprintf(yyout, "%s", yytext); }
+
+%%
+
+int main()
+{
+    yyin = fopen("ep4read.txt", "r");
+    yyout = fopen("ep4write.txt", "w");
+
+    yylex();
+
+    fclose(yyin);
+    fclose(yyout);
+
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+
+***********
+
+Yaacc
+
+postfix
+
+**********
+
+E1lex.l
+%{
+#include <stdio.h>
+#include "y.tab.h"
+%}
+op "+"|"-"|"*"|"/"
+%%
+[a-z] { yylval=*yytext; return id; }
+{op} { return (int) yytext[0]; }
+\n { return(0); }
+. { return err; }
+%%
+
+E1.y
+%{
+#include <stdio.h>
+#include <ctype.h>
+#define YYSTYPE char
+int f=0;
+%}
+%token id err
+%left '-' '+'
+%left '*' '/'
+%%
+input: /* empty string */
+| input exp {printf("\nThe entered expression is valid.\n");}
+| error {f=1;}
+;
+exp: exp '+' exp { printf("+"); }
+| exp '-' exp { printf("-"); }
+| exp '*' exp { printf("*"); }
+| exp '/' exp { printf("/");}
+
+| id { printf("%c",yylval); }
+;
+%%
+int main()
+{
+printf("\nEnter expression:\n\n");
+yyparse();
+printf("\n");
+if(f==1)
+printf("\nThe entered expression is invalid.\\n");
+return 0;
+}
+int yywrap()
+{
+return 1;
+}
+int yyerror(char *mes) {
+return 0;
+}
+
+# flex E1.l
+# bison -dy E1bison.y
+# gcc lex.yy.c y.tab.c
+
+
+************
+
+
+Check infix prefix postfix
+
+
+**********
+
+/****************************************************/
+* Problem Statement :-
+ Assignment To check whether given expression is
+ infix, postfix or prefix.
+* Roll No :- 40 Batch :- A2
+* BE(Computer)
+* Date :- 2/09/2011
+********************** in.l ***********************
+%{
+#include<stdio.h>
+#include"y.tab.h"
+#include<math.h>
+%}
+%%
+[0-9] {yylval.dval=atoi(yytext);return NUM;}
+[t];
+n return 0;
+. {return yytext[0];}
+%%
+void yyerror(char * str)
+{
+ printf("n Invalid Expression...");
+}
+int main()
+{
+ printf("n ENter Expression => ");
+ yyparse();
+ return(0);
+}
+********************** in.y ***********************
+%{
+#include<stdio.h>
+int yylex(void);
+%}
+%union
+{
+ float dval;
+}
+%token <dval> NUMBER
+%left '+' '-'
+%left '*' '/'
+%nonassoc UMINUS
+%type <dval> exp
+%%
+state : exp {printf("n Infix Expression...");}
+ ;
+exp : NUMBER
+ | exp '+' exp {}
+ | exp '-' exp {}
+ | exp '*' exp {}
+ | exp '/' exp {}
+ ;
+%%
+********************** pre.y ***********************
+%{
+#include<stdio.h>
+int yylex(void);
+%}
+%union
+{
+ int dval;
+}
+%token <dval> NUMBER
+%left '+' '-'
+%left '*' '/'
+%nonassoc UMINUS
+%type <dval> exp
+%%
+state : exp {printf("n Prefix Expression...");}
+ ;
+exp : NUMBER
+ | '+' exp exp {}
+ | '-' exp exp {}
+ | '*' exp exp {}
+ | '/' exp exp {}
+ ;
+%%
+********************** post.y ***********************
+%{
+#include<stdio.h>
+int yylex(void);
+%}
+%union
+{
+ int dval;
+}
+%token <dval> NUMBER
+%left '+' '-'
+%left '*' '/'
+%nonassoc UMINUS
+%type <dval> exp
+%%
+state : exp {printf("n Postfix Expression...");}
+ ;
+exp : NUMBER
+ | exp exp '+' {}
+ | exp exp '-' {}
+ | exp exp '*' {}
+ | exp exp '/' {}
+ ;
+%%
+
+**************
+
+postfix evaaluation
+
+
+**************8
+
+%{
+#include "y.tab.h"
+%}
+%%
+[0-9]+ {yylval=atoi(yytext); return NUMBER;}
+[a-zA-Z] {return ID;}
+\n {return NL;}
+. {return yytext[0];}
+%%
+
+%{
+#include<stdio.h>
+#include<stdlib.h>
+int answer=0;
+%}
+%token NUMBER ID NL
+%left '+' '-'
+%left '*' '/'
+
+
+
+%%
+stmt : exp NL { printf("Valid expression & Answer: %d \n",$1);
+	exit(0);}
+|
+exp1 NL { printf("Valid Expression \nBut, Calculation Can Be Performed On Variables \n");
+	exit(0);}
+;
+
+exp : exp '+' exp  	{$$=$1+$3;}
+| exp '-' exp		{$$=$1-$3;}
+| exp '*' exp		{$$=$1*$3;}
+| exp '/' exp		{$$=$1/$3;}
+| '(' exp ')'		{$$=$2;}
+| NUMBER 		{$$=$1;}
+
+;
+
+exp1 : exp1 '+' exp1
+| exp1 '-' exp1
+| exp1 '*' exp1
+| exp1 '/' exp1
+| '(' exp1 ')'
+| ID
+;
+
+%%
+int yyerror(char *msg)
+{
+printf("Invalid Expression \n");
+exit(0);
+}
+main()
+{
+printf("Enter the expression : \n");
+yyparse();
+}
+int yywrap(){return 1;}
+
+
+***************
+
+Aim: Write YACC specification to recognize strings that can be accepted by grammar
+of the form: a
+nb
+nc, n>=1
+
+
+***************
+
+
+
+Program:
+E2lex.l
+%{
+/* Definition section */
+#include "y.tab.h"
+
+%}
+/* Rule Section */
+%%
+[aA] {return A;}
+[bB] {return B;}
+[cC] {return C;}
+\n {return NL;}
+. {return yytext[0];}
+%%
+int yywrap()
+{
+return 1;
+}
+
+E2.y
+%{
+/* Definition section */
+#include<stdio.h>
+#include<stdlib.h>
+%}
+%token A B C NL
+/* Rule Section */
+%%
+stmt: A S B C NL { printf("valid string\n");
+
+exit(0); }
+
+;
+S: A S B |
+;
+%%
+int yyerror(char *msg)
+{
+printf("invalid string\n");
+exit(0);
+}
+//driver code
+main()
+{
+printf("enter the string\n");
+yyparse();
+}
+
+
+*************
+
+Write YACC specification to recognize strings that can be accepted by grammar
+of the form: (ab)m
+(cd)n
+,m n>=0
+
+
+******************
+
+
+
+Program:
+Lex2.l
+%{
+#include "y.tab.h"
+%}
+%%
+a {return IDA;}
+b {return IDB;}
+c {return IDC;}
+
+d {return IDD;}
+\n {return NL;}
+. {return yytext[0];}
+%%
+Yacc2.y
+%{
+#include<stdio.h>
+#include<stdlib.h>
+%}
+%token IDA IDB IDC IDD NL
+%%
+stmt : start1 start2 NL { printf("\nValid expression\n",$1);
+exit(0);}
+start1 : IDA IDB start1
+| /* epsilon */
+;
+start2 : IDC IDD start2
+| /* epsilon */
+;
+%%
+int yyerror(char *msg)
+{
+printf("Invalid Expression \n");
+exit(0);
+}
+main()
+{
+printf("Enter the expression : \n");
+yyparse();
+}
+int yywrap()
+{
+return 1;
+}
+
+***************8
+
+
+validate for Statement
+
+*************
+
+
+%{
+#include <stdio.h>
+#include "y.tab.h"
+%}
+
+alpha [A-Za-z]
+digit [0-9]
+
+%%
+
+[\t \n]
+for             return FOR;
+{digit}+    return NUM;
+{alpha}({alpha}|{digit})* return ID;
+"<="         return LE;
+">="         return GE;
+"=="         return EQ;
+"!="          return NE;
+"||"            return OR;
+"&&"         return AND;
+.                return yytext[0];
+
+%%
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token ID NUM FOR LE GE EQ NE OR AND
+%right "="
+%left OR AND
+%left '>' '<' LE GE EQ NE
+%left '+' '-'
+%left '*' '/'
+%right UMINUS
+%left '!'
+
+%%
+
+S         : ST {printf("Valid for statement\n"); exit(0);}
+ST       : FOR '(' E ';' E2 ';' E ')' DEF
+           ;
+DEF    : '{' BODY '}'
+           | E';'
+           | ST
+           |
+           ;
+BODY  : BODY BODY
+           | E ';'
+           | ST
+           |
+           ;
+
+E        : ID '=' E
+          | E '+' E
+          | E '-' E
+          | E '*' E
+          | E '/' E
+          | E '<' E
+          | E '>' E
+          | E LE E
+          | E GE E
+          | E EQ E
+          | E NE E
+          | E OR E
+          | E AND E
+          | E '+' '+'
+          | E '-' '-'
+          | ID
+          | NUM
+          ;
+
+
+E2     : E'<'E
+         | E'>'E
+         | E LE E
+         | E GE E
+         | E EQ E
+         | E NE E
+         | E OR E
+         | E AND E
+         ;
+%%
+
+main() {
+printf("Enter the for statement to check :");
+    yyparse();
+
+}
+int yywrap(void)
+{
+   return 1;
+}
+int yyerror(char *mes) {
+   printf("Invalid for statement\n");
+   return 0;
+}
+
+
+****************8
+
+validate if else 
+
+
+**************
+
+
+%{
+#include <stdio.h>
+#include "y.tab.h"
+%}
+
+alpha [A-Za-z]
+digit [0-9]
+
+%%
+
+[\t \n]
+if             return IF;
+else           return ELSE;
+{digit}+    return NUM;
+{alpha}({alpha}|{digit})* return ID;
+"<="         return LE;
+">="         return GE;
+"=="         return EQ;
+"!="          return NE;
+"||"            return OR;
+"&&"         return AND;
+.     return yytext[0];
+
+%%
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token ID NUM IF ELSE LE GE EQ NE OR AND
+%right "="
+%left OR AND
+%left '>' '<' LE GE EQ NE
+%left '+' '-'
+%left '*' '/'
+%right UMINUS
+%left '!'
+
+%%
+
+S         : ST {printf("Valid if statement\n"); exit(0);}
+ST       : IF '(' E ')' DEF ELSE  DEF
+           ;
+DEF    : '{' BODY '}'
+           | E';'
+           | ST
+           |
+           ;
+BODY  : BODY BODY
+           | E ';'
+           | ST
+           |
+           ;
+
+E        : ID '=' E
+          | E '+' E
+          | E '-' E
+          | E '*' E
+          | E '/' E
+          | E '<' E
+          | E '>' E
+          | E LE E
+          | E GE E
+          | E EQ E
+          | E NE E
+          | E OR E
+          | E AND E
+          | E '+' '+'
+          | E '-' '-'
+          | ID
+          | NUM
+          ;
+
+
+E2     : E'<'E
+         | E'>'E
+         | E LE E
+         | E GE E
+         | E EQ E
+         | E NE E
+         | E OR E
+         | E AND E
+         ;
+%%
+
+main() {
+printf("Enter the if else statement to check :");
+    yyparse();
+
+}
+int yywrap(void)
+{
+   return 1;
+}
+int yyerror(char *mes) {
+   printf("Invalid if else statement\n");
+   return 0;
+}
+
+****************88
+
+
+validate do while
+
+
+
+**************88
+
+
+Program:
+
+Lex3.l
+%{
+#include "y.tab.h"
+%}
+%%
+"{".*"}" {return STATEMENTS;}
+do|DO {return DO;}
+while|While|WHILE {return WHILE;}
+[a-zA-Z] {return EXP;}
+[0-9]+ {return NUMBER;}
+\n {return NL;}
+
+. {return yytext[0];}
+%%
+
+Yacc3.y
+%{
+#include<stdio.h>
+#include<stdlib.h>
+%}
+%token DO WHILE EXP NUMBER NL STATEMENTS
+%%
+stmt : sexp { printf("\nValid expression\n",$1);
+exit(0);}
+sexp : DO '\n' STATEMENTS cond
+| DO STATEMENTS cond
+;
+cond : WHILE'('stmt '>' stmt')'';'
+| WHILE'('stmt '<' stmt')'';'
+| WHILE'('stmt '>''=' stmt')'';'
+| WHILE'('stmt '<''=' stmt')'';'
+| WHILE'('stmt '!''=' stmt')'';'
+| WHILE'('stmt '=''=' stmt')'';'
+;
+stmt : exp
+| exp1
+;
+exp : exp '+' exp
+| exp '-' exp
+| exp '*' exp
+| exp '/' exp
+| '(' exp ')'
+| NUMBER
+;
+exp1 : exp1 '+' exp1
+| exp1 '-' exp1
+| exp1 '*' exp1
+| exp1 '/' exp1
+| '(' exp1 ')'
+| EXP
+;
+%%
+int yyerror(char *msg)
+{
+printf("Invalid Expression \n");
+exit(0);
+}
+
+main()
+{
+printf("Enter the expression : \n");
+yyparse();
+}
+int yywrap(){return 1;}
+
+
+****************8
